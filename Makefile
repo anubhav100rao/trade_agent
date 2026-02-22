@@ -1,18 +1,35 @@
-.PHONY: dev stop run test validate clean
+.PHONY: dev stop run run-nse-mcp test validate clean help
 
 VENV = source /Users/anubhav100rao/python_venv/bin/activate &&
 
 ##@ Development Infrastructure
 
-dev:   ## Start Redis, Qdrant, Postgres (docker-compose)
+PID_FILE := .api.pid
+
+dev:   ## Start infra (Docker) + FastAPI server in background
 	docker-compose up -d
-	@echo "Services started:"
-	@echo "  Redis:    localhost:6379  (UI: localhost:8001)"
+	@echo "Infrastructure started:"
+	@echo "  Redis:    localhost:6379"
 	@echo "  Qdrant:   localhost:6333"
 	@echo "  Postgres: localhost:5432"
+	@echo ""
+	$(VENV) uvicorn api.main:app --host 0.0.0.0 --port 8000 --log-level info & echo $$! > $(PID_FILE)
+	@sleep 1
+	@echo "API server started — http://localhost:8000  (PID: $$(cat $(PID_FILE)))"
+	@echo "Run 'make logs' for infra logs, 'make stop' to stop everything."
 
-stop:  ## Stop all docker services
+stop:  ## Stop API server + all Docker services
+	@if [ -f $(PID_FILE) ]; then \
+		PID=$$(cat $(PID_FILE)); \
+		echo "Stopping API server (PID: $$PID)..."; \
+		kill $$PID 2>/dev/null || true; \
+		rm -f $(PID_FILE); \
+	else \
+		echo "No PID file found — killing any uvicorn process on :8000..."; \
+		lsof -ti:8000 | xargs kill -9 2>/dev/null || true; \
+	fi
 	docker-compose down
+	@echo "All services stopped."
 
 logs:  ## Tail docker-compose logs
 	docker-compose logs -f

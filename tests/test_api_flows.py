@@ -29,6 +29,9 @@ import httpx
 import warnings
 warnings.filterwarnings("ignore")
 
+# Force tests to use mock LLM to avoid quota limits
+os.environ["MOCK_LLM"] = "true"
+
 # ── paths ──────────────────────────────────────────────────────────────────
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -57,7 +60,7 @@ def server():
         cwd=ROOT,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
-        env={**os.environ, "PYTHONPATH": ROOT},
+        env={**os.environ, "PYTHONPATH": ROOT, "MOCK_LLM": "true"},
     )
 
     # Wait until the health endpoint responds

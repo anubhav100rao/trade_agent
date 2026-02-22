@@ -34,9 +34,6 @@ def _get_llm():
 
 # ── Pre-built indicator script (LLM-writeable in future) ─────────
 INDICATOR_SCRIPT = """
-import warnings
-warnings.filterwarnings('ignore')
-
 results = {}
 
 # RSI (14-period)

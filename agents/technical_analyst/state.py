@@ -18,3 +18,4 @@ class TechnicalAnalystState(TypedDict):
     # LLM interpretation
     llm_analysis: Optional[dict]        # parsed JSON from LLM
     error: Optional[str]                # if any step failed
+    technical_result: Optional[dict]    # final domain model dict
